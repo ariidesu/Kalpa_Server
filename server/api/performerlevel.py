@@ -1,7 +1,7 @@
 from starlette.responses import JSONResponse
 from starlette.requests import Request
 from starlette.routing import Route
-from datetime import datetime, timezone
+from datetime import datetime
 
 from api.database import player_database, manifest_database, userPerformerHurdleMissions, userPerformerLevelRewards, performerHurdleMissions, performerLevels, userPerformerHurdleMissions, get_user_and_validate_session, get_user_performer_hurdle_missions, get_user_item, get_user_performer_level_rewards, add_mail
 
@@ -57,8 +57,8 @@ async def performer_level_receive_reward_all(request: Request):
                     UserPk=user['pk'],
                     PerformerLevelPk=level_pk,
                     state=2,
-                    createdAt=datetime.now(timezone.utc),
-                    updatedAt=datetime.now(timezone.utc)
+                    createdAt=datetime.utcnow(),
+                    updatedAt=datetime.utcnow()
                 )
                 await player_database.execute(insert_query)
                 
@@ -111,8 +111,8 @@ async def performer_level_receive_reward_level(request: Request):
                 UserPk=user['pk'],
                 PerformerLevelPk=level_pk,
                 state=2,
-                createdAt=datetime.now(timezone.utc),
-                updatedAt=datetime.now(timezone.utc)
+                createdAt=datetime.utcnow(),
+                updatedAt=datetime.utcnow()
             )
             pk = await player_database.execute(insert_query)
             

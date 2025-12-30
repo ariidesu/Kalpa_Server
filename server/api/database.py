@@ -4,6 +4,7 @@ import sqlalchemy
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy import Table, Column, Integer, String, JSON
 from sqlalchemy.future import select
+
 import copy
 
 from itertools import groupby
@@ -12,7 +13,7 @@ from operator import itemgetter
 from starlette.responses import JSONResponse
 
 import os
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 import databases
 import hashlib
 import time
@@ -227,9 +228,9 @@ async def update_user_noah_chapters(user_pk: int, state: int, order: int, curren
             state=state,
             order=order,
             currents=currents,
-            startDate=datetime.now(timezone.utc),
-            createdAt=datetime.now(timezone.utc),
-            updatedAt=datetime.now(timezone.utc)
+            startDate=datetime.utcnow(),
+            createdAt=datetime.utcnow(),
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
     else:
@@ -237,8 +238,8 @@ async def update_user_noah_chapters(user_pk: int, state: int, order: int, curren
             state=state,
             order=order,
             currents=currents,
-            endDate=datetime.now(timezone.utc) if state == 3 else None,
-            updatedAt=datetime.now(timezone.utc)
+            endDate=datetime.utcnow() if state == 3 else None,
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
     
@@ -266,8 +267,8 @@ async def update_user_missions(user_pk: int):
                 expireDate=current_time + 86400,  # 1 day
                 MissionPk=mission_pk,
                 UserPk=user_pk,
-                createdAt=datetime.now(timezone.utc),
-                updatedAt=datetime.now(timezone.utc)
+                createdAt=datetime.utcnow(),
+                updatedAt=datetime.utcnow()
             )
             await player_database.execute(query)
 
@@ -283,8 +284,8 @@ async def update_user_missions(user_pk: int):
                 expireDate=current_time + 604800,  # 1 week
                 MissionPk=mission_pk,
                 UserPk=user_pk,
-                createdAt=datetime.now(timezone.utc),
-                updatedAt=datetime.now(timezone.utc)
+                createdAt=datetime.utcnow(),
+                updatedAt=datetime.utcnow()
             )
             await player_database.execute(query)
 
@@ -330,9 +331,9 @@ async def update_user_noah_parts(user_pk: int, state: int, order: int, noah_part
             state=state,
             order=order,
             endDate=None,
-            startDate=datetime.now(timezone.utc),
-            createdAt=datetime.now(timezone.utc),
-            updatedAt=datetime.now(timezone.utc)
+            startDate=datetime.utcnow(),
+            createdAt=datetime.utcnow(),
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
 
@@ -340,8 +341,8 @@ async def update_user_noah_parts(user_pk: int, state: int, order: int, noah_part
         query = userNoahParts.update().where((userNoahParts.c.UserPk == user_pk) & (userNoahParts.c.NoahPartPk == noah_part_pk)).values(
             state=state,
             order=order,
-            endDate=datetime.now(timezone.utc) if state == 3 else None,
-            updatedAt=datetime.now(timezone.utc)
+            endDate=datetime.utcnow() if state == 3 else None,
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
 
@@ -357,9 +358,9 @@ async def update_user_noah_stages(user_pk: int, state: int, order: int, current:
             current=current,
             PickedTrackPk=PickedTrackPk,
             endDate=None,
-            startDate=datetime.now(timezone.utc),
-            createdAt=datetime.now(timezone.utc),
-            updatedAt=datetime.now(timezone.utc)
+            startDate=datetime.utcnow(),
+            createdAt=datetime.utcnow(),
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
     else:
@@ -368,8 +369,8 @@ async def update_user_noah_stages(user_pk: int, state: int, order: int, current:
             order=order,
             current=current,
             PickedTrackPk=PickedTrackPk,
-            endDate=datetime.now(timezone.utc) if state == 4 else None,
-            updatedAt=datetime.now(timezone.utc)
+            endDate=datetime.utcnow() if state == 4 else None,
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
 
@@ -384,9 +385,9 @@ async def update_user_constell_characters(user_pk: int, characterKey: str, curre
             characterKey=characterKey,
             currentAwaken=currentAwaken,
             currentReverse=currentReverse,
-            startDate=datetime.now(timezone.utc),
-            createdAt=datetime.now(timezone.utc),
-            updatedAt=datetime.now(timezone.utc)
+            startDate=datetime.utcnow(),
+            createdAt=datetime.utcnow(),
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
     else:
@@ -394,7 +395,7 @@ async def update_user_constell_characters(user_pk: int, characterKey: str, curre
             characterKey=characterKey,
             currentAwaken=currentAwaken,
             currentReverse=currentReverse,
-            updatedAt=datetime.now(timezone.utc)
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
 
@@ -421,8 +422,8 @@ async def update_user_character_awakens(user_pk: int, awakenNum: int, CharacterA
             endDate4=endDate[4],
             endDate5=endDate[5],
             endDate6=endDate[6],
-            createdAt=datetime.now(timezone.utc),
-            updatedAt=datetime.now(timezone.utc)
+            createdAt=datetime.utcnow(),
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
     else:
@@ -442,7 +443,7 @@ async def update_user_character_awakens(user_pk: int, awakenNum: int, CharacterA
             endDate4=endDate[4],
             endDate5=endDate[5],
             endDate6=endDate[6],
-            updatedAt=datetime.now(timezone.utc)
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
 
@@ -463,8 +464,8 @@ async def update_user_play_skins(user_pk: int, presetNumber: int, noteItemKey: s
             offsetSignItemKey=offsetSignItemKey,
             speedChangeMarkerItemKey=speedChangeMarkerItemKey,
             hitEffectItemKey=hitEffectItemKey,
-            createdAt=datetime.now(timezone.utc),
-            updatedAt=datetime.now(timezone.utc)
+            createdAt=datetime.utcnow(),
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
     else:
@@ -478,7 +479,7 @@ async def update_user_play_skins(user_pk: int, presetNumber: int, noteItemKey: s
             offsetSignItemKey=offsetSignItemKey,
             speedChangeMarkerItemKey=speedChangeMarkerItemKey,
             hitEffectItemKey=hitEffectItemKey,
-            updatedAt=datetime.now(timezone.utc)
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
 
@@ -490,14 +491,14 @@ async def update_user_play_decos(user_pk: int, presetNumber: int, playDecoPlaceD
             UserPk=user_pk,
             presetNumber=presetNumber,
             playDecoPlaceData=playDecoPlaceData,
-            createdAt=datetime.now(timezone.utc),
-            updatedAt=datetime.now(timezone.utc)
+            createdAt=datetime.utcnow(),
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
     else:
         query = userPlayDecos.update().where((userPlayDecos.c.UserPk == user_pk) & (userPlayDecos.c.presetNumber == presetNumber)).values(
             playDecoPlaceData=playDecoPlaceData,
-            updatedAt=datetime.now(timezone.utc)
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
 
@@ -547,8 +548,8 @@ async def init_user_darkmoon(user_pk: int):
             rerunMapPk2=chart_list[1],
             rerunMapPk3=chart_list[2],
             isThumb=1,
-            createdAt=datetime.now(timezone.utc),
-            updatedAt=datetime.now(timezone.utc)
+            createdAt=datetime.utcnow(),
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
 
@@ -581,8 +582,8 @@ async def init_user_darkmoon(user_pk: int):
             rerunMapPk2=chart_list[1],
             rerunMapPk3=chart_list[2],
             isThumb=0,
-            createdAt=datetime.now(timezone.utc),
-            updatedAt=datetime.now(timezone.utc)
+            createdAt=datetime.utcnow(),
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
 
@@ -593,8 +594,8 @@ async def init_user_darkmoon(user_pk: int):
             bestTotalScore=0,
             endAt=0,
             mode=0,
-            createdAt=datetime.now(timezone.utc),
-            updatedAt=datetime.now(timezone.utc)
+            createdAt=datetime.utcnow(),
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
 
@@ -605,8 +606,8 @@ async def init_user_darkmoon(user_pk: int):
             bestTotalScore=0,
             endAt=0,
             mode=1,
-            createdAt=datetime.now(timezone.utc),
-            updatedAt=datetime.now(timezone.utc)
+            createdAt=datetime.utcnow(),
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
 
@@ -631,10 +632,10 @@ async def create_user(user_name: str, password: str, device_identifier: str):
         isGoogle=0,
         isGamecenter=0,
         state=0,
-        lastActiveDate = datetime.now(timezone.utc),
+        lastActiveDate = datetime.utcnow(),
         currentToken=token_id,
-        createdAt = datetime.now(timezone.utc),
-        updatedAt = datetime.now(timezone.utc),
+        createdAt = datetime.utcnow(),
+        updatedAt = datetime.utcnow(),
         nickname="user" + truncated_uuid
     )
 
@@ -696,8 +697,8 @@ async def create_user(user_name: str, password: str, device_identifier: str):
         dayDarkAreaPlayDate=0,
         lastBattlePassPk=0,
         performerLevel=0,
-        createdAt=datetime.now(timezone.utc),
-        updatedAt=datetime.now(timezone.utc),
+        createdAt=datetime.utcnow(),
+        updatedAt=datetime.utcnow(),
         UserPk=user_pk
     )
     await player_database.execute(query)
@@ -731,8 +732,8 @@ async def create_user(user_name: str, password: str, device_identifier: str):
         totalCntAllPerfectSHardPlus=0,
         totalCntAllPerfectChaos=0,
         totalCntAllPerfectCosmos=0,
-        createdAt=datetime.now(timezone.utc),
-        updatedAt=datetime.now(timezone.utc),
+        createdAt=datetime.utcnow(),
+        updatedAt=datetime.utcnow(),
     )
     await player_database.execute(query)
 
@@ -804,7 +805,7 @@ async def login_user(user_name: str, password: str, device_identifier: str):
 
     # Update user last active date and current token
     query = users.update().where(users.c.id == user_name).values(
-        lastActiveDate=datetime.now(timezone.utc),
+        lastActiveDate=datetime.utcnow(),
         currentToken=token_id
     )
     await player_database.execute(query)
@@ -929,7 +930,7 @@ async def get_user_mailboxes(userPK):
     query = userMailboxes.select().where(userMailboxes.c.UserPk == userPK)
     result = await player_database.fetch_all(query)
     result = [dict(row) for row in result]
-    time_now = datetime.now(timezone.utc)
+    time_now = datetime.utcnow()
     for r in result:
         time_difference = (time_now - r['sent']).total_seconds() / (24 * 60 * 60)
         r['when'] = f"D+{time_difference}"
@@ -1075,7 +1076,7 @@ async def set_user_item(userPK, itemKey, amount, start_date=None, end_date=None)
             "startDate": start_date,
 			"endDate": end_date,
             "createdAt": latest_item['startDate'],
-			"updatedAt": datetime.now(timezone.utc).isoformat() + "Z",
+			"updatedAt": datetime.utcnow().isoformat() + "Z",
             "UserPk": latest_item['UserPk'],
 			"ItemPk": latest_item['ItemPk']
 		}
@@ -1224,10 +1225,10 @@ async def init_user_constell_character(user_pk, characterPK, characterKey):
         characterKey=characterKey,
         currentAwaken=0,
         currentReverse=0,
-        startDate=datetime.now(timezone.utc),
+        startDate=datetime.utcnow(),
         endDate=None,
-        createdAt=datetime.now(timezone.utc),
-        updatedAt=datetime.now(timezone.utc),
+        createdAt=datetime.utcnow(),
+        updatedAt=datetime.utcnow(),
         UserPk=user_pk,
         ConstellCharacterPk=characterPK,
     )
@@ -1389,7 +1390,7 @@ async def update_user_public_profile(user_pk):
         totalCntAllPerfectAbyss=total_allperfect[5],
         totalCntAllPerfectChaos=total_allperfect[6],
         totalCntAllPerfectCosmos=total_allperfect[7],
-        updatedAt=datetime.now(timezone.utc)
+        updatedAt=datetime.utcnow()
     )
     await player_database.execute(query)
 
@@ -1412,8 +1413,8 @@ async def init_user_albums(user_pk):
             lamp1Status=0,
             lamp2Status=0,
             lamp3Status=0,
-            createdAt=datetime.now(timezone.utc),
-            updatedAt=datetime.now(timezone.utc)
+            createdAt=datetime.utcnow(),
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
 
@@ -1496,7 +1497,7 @@ async def check_mission(user_pk, mission_info):
             query = userMissions.update().where((userMissions.c.UserPk == user_pk) & (userMissions.c.MissionPk == mission_pk)).values(
                 current=new_amount,
                 state = 1 if new_amount >= mission_data['goal'] else 0,
-                updatedAt=datetime.now(timezone.utc)
+                updatedAt=datetime.utcnow()
             )
             await player_database.execute(query)
 
@@ -1633,7 +1634,7 @@ async def add_mail(user_pk, title, description, itemRewards, packRewards):
     query = userMailboxes.insert().values(
         title=title,
         description=description,
-        sent=datetime.now(timezone.utc),
+        sent=datetime.utcnow(),
         state=0,
         itemRewards=itemRewards,
         packRewards=packRewards,
@@ -1654,12 +1655,12 @@ async def get_user_memberships(user_pk):
     result = [dict(r) for r in result] if result else []
     for r in result:
         r['startDate'] = r['startDate'].isoformat() + "Z" if r['startDate'] else None
-        r['remainingTime'] = int((r['expireDate'] - datetime.now(timezone.utc)).total_seconds()) if r['expireDate'] else 0
+        r['remainingTime'] = int((r['expireDate'] - datetime.utcnow()).total_seconds()) if r['expireDate'] else 0
         r['expireDate'] = r['expireDate'].isoformat() + "Z" if r['expireDate'] else None
     return result
 
 async def user_has_valid_membership(user_pk, tier):
-    current_time = datetime.now(timezone.utc)
+    current_time = datetime.utcnow()
     query = userMemberships.select().where(
         (userMemberships.c.UserPk == user_pk) &
         (userMemberships.c.membershipType == tier) &
@@ -1669,7 +1670,7 @@ async def user_has_valid_membership(user_pk, tier):
     result = dict(result) if result else None
     if result:
         result['startDate'] = result['startDate'].isoformat() + "Z" if result['startDate'] else None
-        result['remainingTime'] = int((result['expireDate'] - datetime.now(timezone.utc)).total_seconds()) if result['expireDate'] else 0
+        result['remainingTime'] = int((result['expireDate'] - datetime.utcnow()).total_seconds()) if result['expireDate'] else 0
         result['expireDate'] = result['expireDate'].isoformat() + "Z" if result['expireDate'] else None
     
     return result
@@ -1692,7 +1693,7 @@ async def get_user_friend_list(user_pk):
 
 async def update_user_last_active(user_pk):
     query = userProfiles.update().where(userProfiles.c.UserPk == user_pk).values(
-        updatedAt=datetime.now(timezone.utc)
+        updatedAt=datetime.utcnow()
     )
     await player_database.execute(query)
 
@@ -1783,8 +1784,8 @@ async def get_user_gacha(user_pk, gacha_pk, increment_count):
             UserPk=user_pk,
             GachaPk=gacha_pk,
             drawCount=increment_count,
-            createdAt=datetime.now(timezone.utc),
-            updatedAt=datetime.now(timezone.utc)
+            createdAt=datetime.utcnow(),
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
         
@@ -1794,7 +1795,7 @@ async def get_user_gacha(user_pk, gacha_pk, increment_count):
             (userGachas.c.GachaPk == gacha_pk)
         ).values(
             drawCount=user_gacha['drawCount'] + increment_count,
-            updatedAt=datetime.now(timezone.utc)
+            updatedAt=datetime.utcnow()
         )
         await player_database.execute(query)
 
@@ -2035,7 +2036,7 @@ async def update_user_achievement(user_pk, achievement_queue):
                     user_profile[USER_PROFILE_LOOKUP_TABLE[ak]] = user_profile.get(USER_PROFILE_LOOKUP_TABLE[ak], 0) + value
                     query = userProfiles.update().where(userProfiles.c.UserPk == user_pk).values(
                         **{USER_PROFILE_LOOKUP_TABLE[ak]: user_profile[USER_PROFILE_LOOKUP_TABLE[ak]]},
-                        updatedAt=datetime.now(timezone.utc)
+                        updatedAt=datetime.utcnow()
                     )
                     await player_database.execute(query)
 
@@ -2082,7 +2083,7 @@ async def update_user_achievement(user_pk, achievement_queue):
             user_public_profile['totalCntClearAchievement'] = user_public_profile.get('totalCntClearAchievement', 0) + len(completed_achievement_list)
             query = userPublicProfiles.update().where(userPublicProfiles.c.UserPk == user_pk).values(
                 totalCntClearAchievement=user_public_profile['totalCntClearAchievement'],
-                updatedAt=datetime.now(timezone.utc)
+                updatedAt=datetime.utcnow()
             )
             await player_database.execute(query)
 
@@ -2109,7 +2110,7 @@ def combine_queues(main_queue, additional_queue):
 def should_refresh(last_date, period_type):
     if not last_date:
         return True
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     if period_type == "daily":
         return now.date() != last_date.date()
     elif period_type == "weekly":
@@ -2141,7 +2142,7 @@ async def refresh_user_periodic_products(user_pk):
                 user_product_update = userProducts.update().where((userProducts.c.UserPk == user_pk) & (userProducts.c.ProductPk == prod['ProductPk'])).values(
                     lastPeriodicRefreshDate=prod['lastPeriodicRefreshDate'] + timedelta(days=1) if refresh_type == 'daily' else prod['lastPeriodicRefreshDate'] + timedelta(weeks=1),
                     periodicBuyCount=0,
-                    updatedAt=datetime.now(timezone.utc)
+                    updatedAt=datetime.utcnow()
                 )
                 await player_database.execute(user_product_update)
 
@@ -2150,7 +2151,7 @@ async def refresh_user_periodic_products(user_pk):
             user_product_update = userProducts.update().where((userProducts.c.UserPk == user_pk) & (userProducts.c.ProductPk == prod['ProductPk'])).values(
                 lastPeriodicRefreshDate=None,
                 periodicBuyCount=0,
-                updatedAt=datetime.now(timezone.utc)
+                updatedAt=datetime.utcnow()
             )
             await player_database.execute(user_product_update)
 
@@ -2362,8 +2363,8 @@ async def unlock_all_stuffs(user_pk, unlock_config={}):
                         "state": 0,
                         "startDate": None,
                         "endDate": None,
-                        "createdAt": datetime.now(timezone.utc),
-                        "updatedAt": datetime.now(timezone.utc),
+                        "createdAt": datetime.utcnow(),
+                        "updatedAt": datetime.utcnow(),
                         "UserPk": user_pk,
                         "ItemPk": item_pk,
                     }
@@ -2393,7 +2394,7 @@ async def unlock_all_stuffs(user_pk, unlock_config={}):
                     manifest = select(constellCharacters.c.pk, constellCharacters.c.defaultCharacterKey)
                     rows = await manifest_database.fetch_all(manifest)
                     rows = [(row['pk'], row['defaultCharacterKey']) for row in rows]
-                    now = datetime.now(timezone.utc)
+                    now = datetime.utcnow()
 
                     # Fetch all existing constellCharacters for the user
                     existing_constell_query = userConstellCharacters.select().where(userConstellCharacters.c.UserPk == user_pk)

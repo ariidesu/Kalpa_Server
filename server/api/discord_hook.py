@@ -2,7 +2,7 @@
 from starlette.responses import JSONResponse
 from starlette.requests import Request
 from starlette.routing import Route
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 
 from api import database
 from api.misc import check_email, generate_otp
@@ -39,13 +39,14 @@ async def discord_get_token(request: Request, form):
         
         last_generate_date = existing_user['emailCodeExpireDate'] if existing_user['emailCodeExpireDate'] else None
         if last_generate_date:
-            last_generate_date = last_generate_date - timedelta(minutes=10)
-            if (datetime.now(timezone.utc) - last_generate_date).total_seconds() < 60:
+            last_generate_date = datetime.fromisoformat(last_generate_date) - timedelta(minutes=10)
+            if (datetime.utcnow() - last_generate_date).total_seconds() < 60:
                 return JSONResponse({"state": 0, "message": "Too many requests. Please wait a while before retrying."}, status_code=400)
         
+        expire_at_db = datetime.utcnow() + timedelta(minutes=10).isoformat()
         update_query = users.update().where(users.c.pk == existing_bind['UserPk']).values(
             emailCode=token,
-            emailCodeExpireDate=datetime.now(timezone.utc) + timedelta(minutes=10)
+            emailCodeExpireDate=expire_at_db
         )
         await player_database.execute(update_query)
 
@@ -77,14 +78,14 @@ async def discord_get_token(request: Request, form):
         existing_bind = await player_database.fetch_one(existing_query)
         existing_bind = dict(existing_bind) if existing_bind else None
 
-        exipre_at_db = datetime.now(timezone.utc) + timedelta(minutes=10)
+        exipre_at_db = datetime.utcnow() + timedelta(minutes=10).isoformat()
 
         if existing_bind:
             # But a previously unverified bind exists
             last_generate_date = user['emailCodeExpireDate'] if user['emailCodeExpireDate'] else None
             if last_generate_date:
                 last_generate_date = last_generate_date - timedelta(minutes=10)
-                if (datetime.now(timezone.utc) - last_generate_date).total_seconds() < 60:
+                if (datetime.utcnow() - last_generate_date).total_seconds() < 60:
                     return JSONResponse({"state": 0, "message": "Too many requests. Please wait a while before retrying."}, status_code=400)
                 
             update_query = users.update().where(users.c.pk == user["pk"]).values(emailCode=token, emailCodeExpireDate=exipre_at_db)
