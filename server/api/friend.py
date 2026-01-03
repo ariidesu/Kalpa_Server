@@ -1,7 +1,7 @@
 from starlette.responses import JSONResponse
 from starlette.requests import Request
 from starlette.routing import Route
-from datetime import datetime, timezone
+from datetime import datetime
 
 from api.database import player_database, userProfiles, userFriends, get_user_and_validate_session, get_user_profile_by_uid, get_user_friend_pair
 
@@ -80,16 +80,16 @@ async def friend_request_send(request: Request):
                     status = 400
                 else:
                     if user_friend['InviterPk'] == user['pk']:
-                        query = userFriends.update().where((userFriends.c.InviterPk == user['pk']) & (userFriends.c.InviteePk == friend_user_pk)).values(InviterState=2, InviteeState=3, updatedAt=datetime.now(timezone.utc))
+                        query = userFriends.update().where((userFriends.c.InviterPk == user['pk']) & (userFriends.c.InviteePk == friend_user_pk)).values(InviterState=2, InviteeState=3, updatedAt=datetime.utcnow())
                     else:
-                        query = userFriends.update().where((userFriends.c.InviterPk == friend_user_pk) & (userFriends.c.InviteePk == user['pk'])).values(InviterState=3, InviteeState=2, updatedAt=datetime.now(timezone.utc))
+                        query = userFriends.update().where((userFriends.c.InviterPk == friend_user_pk) & (userFriends.c.InviteePk == user['pk'])).values(InviterState=3, InviteeState=2, updatedAt=datetime.utcnow())
                     await player_database.execute(query)
                     query = userProfiles.update().where(userProfiles.c.UserPk == friend_user_pk).values(newFriendRequest=userProfiles.c.newFriendRequest + 1)
                     await player_database.execute(query)
                     message = "Success."
                     status = 200
             else:
-                query = userFriends.insert().values(InviterPk=user['pk'], InviteePk=friend_user_pk, InviterState=2, InviteeState=3, createdAt=datetime.now(timezone.utc), updatedAt=datetime.now(timezone.utc))
+                query = userFriends.insert().values(InviterPk=user['pk'], InviteePk=friend_user_pk, InviterState=2, InviteeState=3, createdAt=datetime.utcnow(), updatedAt=datetime.utcnow())
                 await player_database.execute(query)
                 query = userProfiles.update().where(userProfiles.c.UserPk == friend_user_pk).values(newFriendRequest=userProfiles.c.newFriendRequest + 1)
                 await player_database.execute(query)
@@ -128,9 +128,9 @@ async def friend_request_accept(request: Request):
                 status = 400
             else:
                 if user_friend['InviterPk'] == user['pk']:
-                    query = userFriends.update().where((userFriends.c.InviterPk == user['pk']) & (userFriends.c.InviteePk == friend_user_pk)).values(InviterState=1, InviteeState=1, updatedAt=datetime.now(timezone.utc))
+                    query = userFriends.update().where((userFriends.c.InviterPk == user['pk']) & (userFriends.c.InviteePk == friend_user_pk)).values(InviterState=1, InviteeState=1, updatedAt=datetime.utcnow())
                 else:
-                    query = userFriends.update().where((userFriends.c.InviterPk == friend_user_pk) & (userFriends.c.InviteePk == user['pk'])).values(InviterState=1, InviteeState=1, updatedAt=datetime.now(timezone.utc))
+                    query = userFriends.update().where((userFriends.c.InviterPk == friend_user_pk) & (userFriends.c.InviteePk == user['pk'])).values(InviterState=1, InviteeState=1, updatedAt=datetime.utcnow())
                 await player_database.execute(query)
                 message = "Success."
                 status = 200
@@ -167,9 +167,9 @@ async def friend_request_reject(request: Request):
                 status = 400
             else:
                 if user_friend['InviterPk'] == user['pk']:
-                    query = userFriends.update().where((userFriends.c.InviterPk == user['pk']) & (userFriends.c.InviteePk == friend_user_pk)).values(InviterState=4, InviteeState=4, updatedAt=datetime.now(timezone.utc))
+                    query = userFriends.update().where((userFriends.c.InviterPk == user['pk']) & (userFriends.c.InviteePk == friend_user_pk)).values(InviterState=4, InviteeState=4, updatedAt=datetime.utcnow())
                 else:
-                    query = userFriends.update().where((userFriends.c.InviterPk == friend_user_pk) & (userFriends.c.InviteePk == user['pk'])).values(InviterState=4, InviteeState=4, updatedAt=datetime.now(timezone.utc))
+                    query = userFriends.update().where((userFriends.c.InviterPk == friend_user_pk) & (userFriends.c.InviteePk == user['pk'])).values(InviterState=4, InviteeState=4, updatedAt=datetime.utcnow())
                 await player_database.execute(query)
                 message = "Success."
                 status = 200
@@ -206,9 +206,9 @@ async def friend_delete(request: Request):
                 status = 400
             else:
                 if user_friend['InviterPk'] == user['pk']:
-                    query = userFriends.update().where((userFriends.c.InviterPk == user['pk']) & (userFriends.c.InviteePk == friend_user_pk)).values(InviterState=4, InviteeState=4, updatedAt=datetime.now(timezone.utc))
+                    query = userFriends.update().where((userFriends.c.InviterPk == user['pk']) & (userFriends.c.InviteePk == friend_user_pk)).values(InviterState=4, InviteeState=4, updatedAt=datetime.utcnow())
                 else:
-                    query = userFriends.update().where((userFriends.c.InviterPk == friend_user_pk) & (userFriends.c.InviteePk == user['pk'])).values(InviterState=4, InviteeState=4, updatedAt=datetime.now(timezone.utc))
+                    query = userFriends.update().where((userFriends.c.InviterPk == friend_user_pk) & (userFriends.c.InviteePk == user['pk'])).values(InviterState=4, InviteeState=4, updatedAt=datetime.utcnow())
                 await player_database.execute(query)
                 message = "Success."
                 status = 200

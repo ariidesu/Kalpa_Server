@@ -4,108 +4,104 @@ import requests
 import base64
 import gzip
 import io
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
-def ensure_dir(directory):
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+asset_dirs = [
+    "mapfiles", "asset/text", "audfiles",
+    "midifiles", "covfiles", "iconfiles", "eventbanner"
+]
 
-def download_file(url, dest_path):
+BASE_URL = "https://d1h9358u1aon5f.cloudfront.net/"
+
+def ensure_dirs():
+    for d in asset_dirs:
+        os.makedirs(d, exist_ok=True)
+
+def download_file(session, url, dest_path):
     try:
-        response = requests.get(url, timeout=30)
-        response.raise_for_status()
-        with open(dest_path, 'wb') as f:
-            f.write(response.content)
-        print(f"Downloaded: {dest_path}")
+        r = session.get(url, timeout=30)
+        r.raise_for_status()
+        with open(dest_path, "wb") as f:
+            f.write(r.content)
+        return f"Downloaded: {dest_path}"
     except Exception as e:
-        print(f"Failed to download {url}: {e}")
+        return f"Failed {url}: {e}"
+
+def run_downloads(tasks, max_workers=8):
+    with requests.Session() as session:
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            futures = [
+                pool.submit(download_file, session, url, path)
+                for url, path in tasks
+            ]
+            for f in as_completed(futures):
+                print(f.result())
 
 def main():
-    ensure_dir("mapfiles")
-    ensure_dir("asset/text")
-    ensure_dir("audfiles")
-    ensure_dir("midifiles")
-    ensure_dir("covfiles")
-    ensure_dir("iconfiles")
-    ensure_dir("eventbanner")
+    ensure_dirs()
 
-    with open('b64.txt', 'r') as f:
-        b64_data = f.read()
+    # Decode JSON
+    with open("b64.txt", "r") as f:
+        binary_data = base64.b64decode(f.read())
 
-    binary_data = base64.b64decode(b64_data)
+    with gzip.open(io.BytesIO(binary_data), "rt", encoding="utf-8") as gz:
+        data = json.loads(gz.read())
 
-    with gzip.open(io.BytesIO(binary_data), 'rt', encoding='utf-8') as gz:
-        json_data = gz.read()
+    tasks = []
 
-    json_data = json.loads(json_data)
+    # Tracks
+    for track in data["tracks"]:
+        for key in ("audioFileName", "audioPreviewFileName"):
+            name = track.get(key)
+            if name:
+                path = f"audfiles/{name}"
+                if not os.path.exists(path):
+                    tasks.append((f"{BASE_URL}audfiles/{name}", path))
 
-    tracks = json_data['tracks']
-    print("downloading audios and thumbnails...")
+        midi = track.get("midiFileName")
+        if midi and midi != "NULL":
+            path = f"midifiles/{midi}"
+            if not os.path.exists(path):
+                tasks.append((f"{BASE_URL}midifiles/{midi}", path))
 
-    for track in tracks:
-        for key in ['audioFileName', 'audioPreviewFileName']:
-            file_name = track.get(key, "")
-            if file_name:
-                dest_path = os.path.join("audfiles", file_name)
-                if not os.path.exists(dest_path):
-                    url = f"https://d1h9358u1aon5f.cloudfront.net/audfiles/{file_name}"
-                    download_file(url, dest_path)
+        for key in ("coverFileName", "blurredCoverFileName", "thumbnailFileName"):
+            name = track.get(key)
+            if name:
+                path = f"covfiles/{name}"
+                if not os.path.exists(path):
+                    tasks.append((f"{BASE_URL}covfiles/{name}", path))
 
-        for key in ['midiFileName']:
-            file_name = track.get(key, "")
-            if file_name:
-                if file_name != "NULL":
-                    dest_path = os.path.join("midifiles", file_name)
-                    if not os.path.exists(dest_path):
-                        url = f"https://d1h9358u1aon5f.cloudfront.net/midifiles/{file_name}"
-                        download_file(url, dest_path)
-            
+    # Maps
+    for m in data["maps"]:
+        name = m.get("mapFileName")
+        if name:
+            path = f"mapfiles/{name}"
+            if not os.path.exists(path):
+                tasks.append((f"{BASE_URL}mapfiles/{name}", path))
 
-        for key in ['coverFileName', 'blurredCoverFileName', 'thumbnailFileName']:
-            file_name = track.get(key, "")
-            if file_name:
-                dest_path = os.path.join("covfiles", file_name)
-                if not os.path.exists(dest_path):
-                    url = f"https://d1h9358u1aon5f.cloudfront.net/covfiles/{file_name}"
-                    download_file(url, dest_path)
+    # Event banners
+    for b in data["eventBanners"]:
+        name = b.get("fileName")
+        if name:
+            path = f"eventbanner/{name}"
+            if not os.path.exists(path):
+                tasks.append((f"{BASE_URL}eventbanner/{name}", path))
 
-    maps = json_data['maps']
-    print("downloading maps...")
+    # Misc
+    if data.get("packIconAtlasFilename"):
+        name = data["packIconAtlasFilename"]
+        path = f"iconfiles/{name}"
+        if not os.path.exists(path):
+            tasks.append((f"{BASE_URL}iconfiles/{name}", path))
 
-    for map in maps:
-        for key in ["mapFileName"]:
-            file_name = map.get(key, "")
-            if file_name:
-                dest_path = os.path.join("mapfiles", file_name)
-                if not os.path.exists(dest_path):
-                    url = f"https://d1h9358u1aon5f.cloudfront.net/mapfiles/{file_name}"
-                    download_file(url, dest_path)
+    if data.get("localizationEntryFilename"):
+        name = data["localizationEntryFilename"]
+        path = f"asset/text/{name}"
+        if not os.path.exists(path):
+            tasks.append((f"{BASE_URL}asset/text/{name}", path))
 
-    event_banners = json_data['eventBanners']
-    print("downloading event banners...")
-    for banner in event_banners:
-        for key in ["fileName"]:
-            file_name = banner.get(key, "")
-            if file_name:
-                dest_path = os.path.join("eventbanner", file_name)
-                if not os.path.exists(dest_path):
-                    url = f"https://d1h9358u1aon5f.cloudfront.net/eventbanner/{file_name}"
-                    download_file(url, dest_path)
-
-    pack_icon_atlas = json_data['packIconAtlasFilename']
-    localization_entry = json_data['localizationEntryFilename']
-    print("Downloading misc...")
-
-    if pack_icon_atlas:
-        dest_path = os.path.join("iconfiles", pack_icon_atlas)
-        if not os.path.exists(dest_path):
-            url = f"https://d1h9358u1aon5f.cloudfront.net/iconfiles/{pack_icon_atlas}"
-            download_file(url, dest_path)
-
-    if localization_entry:
-        dest_path = os.path.join("asset/text", localization_entry)
-        if not os.path.exists(dest_path):
-            url = f"https://d1h9358u1aon5f.cloudfront.net/asset/text/{localization_entry}"
-            download_file(url, dest_path)
+    print(f"Starting {len(tasks)} downloads...")
+    run_downloads(tasks, max_workers=12)
 
 if __name__ == "__main__":
     main()

@@ -2,9 +2,9 @@ from starlette.responses import JSONResponse
 from starlette.requests import Request
 from starlette.routing import Route
 import random
-from datetime import datetime, timezone
+from datetime import datetime
 
-from api.database import manifest_database, player_database, playRecords, bestRecords, userConstellCharacters, performerHurdleMissions, userPerformerHurdleMissions, userNoahStages, noahStages, userDarkmoon, userDarkmoonRankings, constellCharacters, skills, characterAwakens, characterLevelSystems, userCharacterAwakens, characterFavoriteSongs, userNoahParts, userNoahChapters, ranking_cache, cache_database, userPublicProfiles, tracks, labMissions, userLabMissions, labProducts, userProfiles, get_user_and_validate_session, check_mission, get_user_performer_hurdle_missions, check_item_entitlement, increment_user_lab_mission, get_map, update_user_public_profile, get_user_sum_score_for_mode, get_user_achieved_list, set_user_item
+from api.database import manifest_database, player_database, playRecords, bestRecords, userConstellCharacters, performerHurdleMissions, userPerformerHurdleMissions, userNoahStages, noahStages, userDarkmoon, userDarkmoonRankings, characterAwakens, characterLevelSystems, userCharacterAwakens, userNoahParts, userNoahChapters, ranking_cache, cache_database, userPublicProfiles, tracks, labMissions, userLabMissions, labProducts, userProfiles, get_user_and_validate_session, check_mission, get_user_performer_hurdle_missions, check_item_entitlement, increment_user_lab_mission, get_map, update_user_public_profile, get_user_sum_score_for_mode, get_user_achieved_list, set_user_item
 from api.templates_norm import PLAY_PUBLIC_KEY, DARKMOON_BOOST_CONFIG, DIFF_TABLE
 from api.misc import convert_datetime, get_standard_response, generate_object_id, is_multi_mode, single_rating, refresh_user_rating, get_next_stage, get_character_skill, is_favorite_song
 from api.noah import sync_user_noah_chapter, get_user_noah_stages, update_user_noah_stages
@@ -327,8 +327,8 @@ async def api_play_end(request: Request):
             UserPk = user['pk'],
             lampState = 4,
             lunaticLampState = 4,
-            updatedAt = datetime.now(timezone.utc),
-            createdAt = datetime.now(timezone.utc)
+            updatedAt = datetime.utcnow(),
+            createdAt = datetime.utcnow()
         )
         record_pk = await player_database.execute(query)
 
@@ -510,8 +510,8 @@ async def api_play_end(request: Request):
                 "UserPk": user['pk'],
                 "lampState": 4,
                 "lunaticLampState": 4,
-                "updatedAt": datetime.now(timezone.utc).isoformat(),
-                "createdAt": datetime.now(timezone.utc).isoformat()
+                "updatedAt": datetime.utcnow().isoformat(),
+                "createdAt": datetime.utcnow().isoformat()
             }
             
             if not existing_best:
@@ -541,8 +541,8 @@ async def api_play_end(request: Request):
                     lampState = 4,
                     lunaticLampState = 4,
                     rating = rating if map_info else 0,
-                    updatedAt = datetime.now(timezone.utc),
-                    createdAt = datetime.now(timezone.utc)
+                    updatedAt = datetime.utcnow(),
+                    createdAt = datetime.utcnow()
                 )
 
                 obj = await player_database.execute(query)
@@ -569,7 +569,7 @@ async def api_play_end(request: Request):
                     lampState = 4,
                     lunaticLampState = 4,
                     rating = rating if map_info else existing_best['rating'],
-                    updatedAt = datetime.now(timezone.utc),
+                    updatedAt = datetime.utcnow(),
                 )
                 await player_database.execute(query)
                 best_record['pk'] = existing_best['pk']
@@ -627,7 +627,7 @@ async def api_play_end(request: Request):
                                 (userLabMissions.c.UserPk == user['pk']) & (userLabMissions.c.LabMissionPk == user_lab_mission_pk)
                             ).values(
                                 state = 2,
-                                endDate = datetime.now(timezone.utc)
+                                endDate = datetime.utcnow()
                             )
                             await player_database.execute(update_query)
 
@@ -643,7 +643,7 @@ async def api_play_end(request: Request):
 
                                 update_query = userProfiles.update().where(userProfiles.c.UserPk == user['pk']).values(
                                     onResearchLabMissionPkOrZero = next_mission_pk,
-                                    researchStartDate = datetime.now(timezone.utc)
+                                    researchStartDate = datetime.utcnow()
                                 )
                                 await player_database.execute(update_query)
 
@@ -818,7 +818,7 @@ async def api_play_end(request: Request):
                         (userCharacterAwakens.c.UserPk == user['pk']) & (userCharacterAwakens.c.CharacterAwakenPk == character_awaken_system['pk'])
                     ).values(
                         **{f'currentExp{user_constell_character["currentReverse"]}': total_exp},
-                        updatedAt = datetime.now(timezone.utc)
+                        updatedAt = datetime.utcnow()
                     )
                     await player_database.execute(query)
 
@@ -907,7 +907,6 @@ async def api_play_end(request: Request):
         
         if skill_effect and skill_effect.get('currentlyUsing'):
             boost = skill_effect['currentlyUsing'].get('value', 0)
-            print("boost", boost)
             performer_level_exp = int(performer_level_exp * (1 + (boost / 100)))
 
     json_data, completed_ach = await get_standard_response(user, user_profile, item_list=reward_list, performer_level_exp=performer_level_exp, achievement_list=achievement_queue)
@@ -989,8 +988,8 @@ async def api_multiplay_end(request: Request):
         UserPk = user_pk,
         lampState = 4,
         lunaticLampState = 0,
-        updatedAt = datetime.now(timezone.utc),
-        createdAt = datetime.now(timezone.utc)
+        updatedAt = datetime.utcnow(),
+        createdAt = datetime.utcnow()
     )
 
     record_pk = await player_database.execute(query)
@@ -1036,8 +1035,8 @@ async def api_multiplay_end(request: Request):
                 lampState = 4,
                 lunaticLampState = 0,
                 rating = rating if map_info else 0,
-                updatedAt = datetime.now(timezone.utc),
-                createdAt = datetime.now(timezone.utc)
+                updatedAt = datetime.utcnow(),
+                createdAt = datetime.utcnow()
             )
             await player_database.execute(query)
 
@@ -1063,7 +1062,7 @@ async def api_multiplay_end(request: Request):
                 lampState = 4,
                 lunaticLampState = 0,
                 rating = rating if map_info else existing_best['rating'],
-                updatedAt = datetime.now(timezone.utc),
+                updatedAt = datetime.utcnow(),
             )
             await player_database.execute(query)
 

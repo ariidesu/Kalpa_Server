@@ -1,7 +1,7 @@
 from starlette.responses import JSONResponse
 from starlette.requests import Request
 from starlette.routing import Route
-from datetime import datetime, timezone
+from datetime import datetime
 
 from api.database import manifest_database, player_database, userConstellCharacters, userProfiles, userCharacterAwakens, characterAwakens, characterLevelSystems, characterCostSystems, characterRewardSystems, constellCharacters, get_user_and_validate_session, check_item_entitlement
 from api.misc import get_standard_response, convert_datetime
@@ -43,7 +43,7 @@ async def character_skin_dress(request: Request):
                 (userConstellCharacters.c.UserPk == user['pk'])
             ).values(
                 characterKey=character_key,
-                updatedAt=datetime.now(timezone.utc)
+                updatedAt=datetime.utcnow()
             )
             await player_database.execute(update_query)
 
@@ -61,8 +61,8 @@ async def character_skin_dress(request: Request):
             if new_character:
                 new_character = convert_datetime(new_character)
 
-            new_character['createdAt'] = datetime.now(timezone.utc).isoformat()
-            new_character['updatedAt'] = datetime.now(timezone.utc).isoformat()
+            new_character['createdAt'] = datetime.utcnow().isoformat()
+            new_character['updatedAt'] = datetime.utcnow().isoformat()
             data = {
                 "userConstellCharacter": new_character,
                 "isProfileChanged": True
@@ -171,7 +171,7 @@ async def character_reverse(request: Request):
                             (userConstellCharacters.c.ConstellCharacterPk == character_pk)
                         ).values(
                             currentReverse=current_character_reverse_level + 1,
-                            updatedAt=datetime.now(timezone.utc)
+                            updatedAt=datetime.utcnow()
                         )
                         await player_database.execute(update_query)
 
@@ -179,8 +179,8 @@ async def character_reverse(request: Request):
                             (userCharacterAwakens.c.UserPk == user['pk']) &
                             (userCharacterAwakens.c.CharacterAwakenPk == character_awaken_system['pk'])
                         ).values(
-                            **{f'endDate{current_character_reverse_level}': datetime.now(timezone.utc)},
-                            updatedAt=datetime.now(timezone.utc)
+                            **{f'endDate{current_character_reverse_level}': datetime.utcnow()},
+                            updatedAt=datetime.utcnow()
                         )
                         await player_database.execute(update_query)
                         
@@ -229,9 +229,9 @@ async def character_unlock(request: Request):
                 currentReverse = 0,
                 currentAwaken = 0,
                 UserPk = user['pk'],
-                startDate = datetime.now(timezone.utc),
-                createdAt = datetime.now(timezone.utc),
-                updatedAt = datetime.now(timezone.utc),
+                startDate = datetime.utcnow(),
+                createdAt = datetime.utcnow(),
+                updatedAt = datetime.utcnow(),
                 ConstellCharacterPk = character_pk,
             )
             await player_database.execute(insert_query)
@@ -258,8 +258,8 @@ async def character_unlock(request: Request):
                 currentExp4 = 0,
                 currentExp5 = 0,
                 currentExp6 = 0,
-                createdAt = datetime.now(timezone.utc),
-                updatedAt = datetime.now(timezone.utc),
+                createdAt = datetime.utcnow(),
+                updatedAt = datetime.utcnow(),
                 UserPk = user['pk'],
                 CharacterAwakenPk = character_pk,
             )

@@ -2,7 +2,7 @@ import base64
 import json
 import secrets
 import hashlib
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 import base64
 import json
 import secrets
@@ -318,29 +318,29 @@ async def append_user_subscription(user_pk, tier, hours):
         start_date = target_membership['startDate']
 
         # Determine the end date
-        if target_membership['expireDate'] < datetime.now(timezone.utc):
-            end_date = datetime.now(timezone.utc) + timedelta(hours=hours)  # Renew from now
+        if target_membership['expireDate'] < datetime.utcnow():
+            end_date = datetime.utcnow() + timedelta(hours=hours)  # Renew from now
         else:
             end_date = target_membership['expireDate'] + timedelta(hours=hours)  # Extend from expireDate
 
         # Update the membership
         query = userMemberships.update().where(userMemberships.c.pk == target_membership['pk']).values(
-            updatedAt=datetime.now(timezone.utc),
+            updatedAt=datetime.utcnow(),
             startDate=start_date,
             expireDate=end_date,
         )
         await player_database.execute(query)
     else:
         # Create a new membership
-        start_date = datetime.now(timezone.utc) - timedelta(days=1)
-        end_date = datetime.now(timezone.utc) + timedelta(hours=hours)
+        start_date = datetime.utcnow() - timedelta(days=1)
+        end_date = datetime.utcnow() + timedelta(hours=hours)
         query = userMemberships.insert().values(
             UserPk=user_pk,
             membershipType=tier,
             startDate=start_date,
             expireDate=end_date,
-            createdAt=datetime.now(timezone.utc),
-            updatedAt=datetime.now(timezone.utc),
+            createdAt=datetime.utcnow(),
+            updatedAt=datetime.utcnow(),
         )
         await player_database.execute(query)
 

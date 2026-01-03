@@ -2,7 +2,7 @@ from starlette.responses import JSONResponse
 from starlette.requests import Request
 from starlette.routing import Route
 import random
-from datetime import datetime, timezone
+from datetime import datetime
 
 from api.database import manifest_database, player_database, products, productBundles, randomProductPercentages, items, userProducts, get_user_and_validate_session,  get_user_product, add_tracks, add_packs, add_root_characters, check_item_entitlement,  combine_queues
 from api.misc import get_standard_response, convert_datetime
@@ -105,24 +105,24 @@ async def buy_product(request: Request):
                 user_product_update = userProducts.update().where(userProducts.c.pk == existing_product['pk']).values(
                     buyCount = existing_product['buyCount'] + amount,
                     periodicBuyCount = existing_product['periodicBuyCount'] + amount,
-                    updatedAt = datetime.now(timezone.utc)
+                    updatedAt = datetime.utcnow()
                 )
             else:
                 user_product_update = userProducts.update().where(userProducts.c.pk == existing_product['pk']).values(
                     buyCount = existing_product['buyCount'] + amount,
-                    updatedAt = datetime.now(timezone.utc)
+                    updatedAt = datetime.utcnow()
                 )
             await player_database.execute(user_product_update)
         else:
             if target_product['refreshPeriod'] in ['weekly', 'daily']:
                 user_product_insert = userProducts.insert().values(
                     periodicBuyCount = 1,
-                    lastPeriodicRefreshDate = datetime.now(timezone.utc),
+                    lastPeriodicRefreshDate = datetime.utcnow(),
                     UserPk = user['pk'],
                     ProductPk = product_pk,
                     buyCount = 1,
-                    createdAt = datetime.now(timezone.utc),
-                    updatedAt = datetime.now(timezone.utc)
+                    createdAt = datetime.utcnow(),
+                    updatedAt = datetime.utcnow()
                 )
             else:
                 user_product_insert = userProducts.insert().values(
@@ -131,8 +131,8 @@ async def buy_product(request: Request):
                     UserPk = user['pk'],
                     ProductPk = product_pk,
                     buyCount = 1,
-                    createdAt = datetime.now(timezone.utc),
-                    updatedAt = datetime.now(timezone.utc)
+                    createdAt = datetime.utcnow(),
+                    updatedAt = datetime.utcnow()
                 )
             await player_database.execute(user_product_insert)
 

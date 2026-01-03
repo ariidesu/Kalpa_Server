@@ -2,7 +2,7 @@ from starlette.responses import JSONResponse
 from starlette.requests import Request
 from starlette.routing import Route
 import datetime
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 
 from api.database import player_database, manifest_database, users, userProfiles, userPlaySkins, userPlayDecos, items, userItems, constellCharacters, userPublicProfiles, userFavorites, binds, get_user_and_validate_session, login_user, check_item_entitlement, get_user_achieved_list, get_user_public_profile, get_user_root_character_items, get_user_constella_characters, get_user_friend_pair
 from api.crypt import hash_password, verify_password
@@ -19,7 +19,7 @@ async def user_email_verify_code(request: Request):
 
     #hashed_code = hash_otp(email_code)
     expire_dt = user["emailCodeExpireDate"]
-    current_time = datetime.now(timezone.utc)
+    current_time = datetime.utcnow()
 
     if email_code != user["emailCode"] or current_time > expire_dt:
         return JSONResponse({
@@ -37,7 +37,7 @@ async def user_email_verify_code(request: Request):
 
         if existing_bind:
             # User bind successful, update bind status
-            update_query = binds.update().where(binds.c.pk == existing_bind['pk']).values(isVerified=1, bindDate=datetime.now(timezone.utc))
+            update_query = binds.update().where(binds.c.pk == existing_bind['pk']).values(isVerified=1, bindDate=datetime.utcnow())
             await player_database.execute(update_query)
 
     json_data, completed_ach = await get_standard_response(user, user_profile)
@@ -71,13 +71,13 @@ async def user_email_send_code(request: Request):
     email_code_expire_date = existing_user['emailCodeExpireDate'] if existing_user else None
     last_email_send_time = email_code_expire_date - timedelta(minutes=10) if email_code_expire_date else datetime.min
 
-    if (datetime.now(timezone.utc) - last_email_send_time).total_seconds() < 60 and AUTH_MODE in [0, 1]:
+    if (datetime.utcnow() - last_email_send_time).total_seconds() < 60 and AUTH_MODE in [0, 1]:
         status = 400
         message = "Too many requests."
         data = {}
     else:
         verify_code, hashed_code = generate_otp()
-        exipre_at_db = datetime.now(timezone.utc) + timedelta(minutes=10)
+        exipre_at_db = datetime.utcnow() + timedelta(minutes=10)
         exipre_at = int(exipre_at_db.timestamp())
 
         if AUTH_MODE == 0:
@@ -233,8 +233,8 @@ async def user_profile_update(request: Request):
                         "currentCharacterKey": character_key,
                         "UserPk": user["pk"],
                         "RootCharacterPk": constell['pk'],
-                        "updatedAt": datetime.now(timezone.utc).isoformat(),
-                        "createdAt": datetime.now(timezone.utc).isoformat()
+                        "updatedAt": datetime.utcnow().isoformat(),
+                        "createdAt": datetime.utcnow().isoformat()
                     }
                 }
             elif background_key:
@@ -304,7 +304,7 @@ async def user_play_skin_update(request: Request):
             offsetSignItemKey=offset_sign_item_key,
             speedChangeMarkerItemKey=speed_change_marker_item_key,
             hitEffectItemKey=hit_effect_item_key,
-            updatedAt=datetime.now(timezone.utc)
+            updatedAt=datetime.utcnow()
         )
     await player_database.execute(update_query)
 
@@ -336,7 +336,7 @@ async def user_play_deco_update(request: Request):
     update_query = userPlayDecos.update().where(
         (userPlayDecos.c.UserPk == user['pk']) & (userPlayDecos.c.presetNumber == preset_id)).values(
             playDecoPlaceData=play_deco_place_data,
-            updatedAt=datetime.now(timezone.utc)
+            updatedAt=datetime.utcnow()
         )
     await player_database.execute(update_query)
 
@@ -366,7 +366,7 @@ async def user_profile_public_range_change(request: Request):
     data = await request.form()
     is_thumb = data.get("isThumb")
 
-    query = userPublicProfiles.update().where(userPublicProfiles.c.UserPk == user['pk']).values(isThumb=is_thumb, updatedAt=datetime.now(timezone.utc))
+    query = userPublicProfiles.update().where(userPublicProfiles.c.UserPk == user['pk']).values(isThumb=is_thumb, updatedAt=datetime.utcnow())
     await player_database.execute(query)
 
     json_data, completed_ach = await get_standard_response(user, user_profile)
@@ -444,7 +444,7 @@ async def user_password_reset(request: Request):
         data = {}
     else:
         new_hashed_password = hash_password(newPw)
-        query = users.update().where(users.c.pk == user['pk']).values(pw=new_hashed_password, updatedAt=datetime.now(timezone.utc))
+        query = users.update().where(users.c.pk == user['pk']).values(pw=new_hashed_password, updatedAt=datetime.utcnow())
         await player_database.execute(query)
 
         code, token = await login_user(user['id'], newPw, device_identifier)

@@ -1,7 +1,7 @@
 from starlette.responses import JSONResponse
 from starlette.requests import Request
 from starlette.routing import Route
-from datetime import datetime, timezone
+from datetime import datetime
 import json
 
 from api.database import manifest_database, player_database, get_user_and_validate_session, userAlbums, albums, albumLampConditions, userAlbums, albumOpenConditions, userProfiles, check_mission, check_item_entitlement, performerHurdleMissions, userPerformerHurdleMissions, get_user_performer_hurdle_missions, userAlbumRecords, userAlbumBestRecords, get_user_achieved_list, ranking_cache, cache_database
@@ -170,8 +170,8 @@ async def album_play_end(request: Request):
             lamp1Status=0,
             lamp2Status=0,
             lamp3Status=0,
-            createdAt=datetime.now(timezone.utc).isoformat(),
-            updatedAt=datetime.now(timezone.utc).isoformat(),
+            createdAt=datetime.utcnow().isoformat(),
+            updatedAt=datetime.utcnow().isoformat(),
             UserPk=user['pk'],
             AlbumPk=album_pk
         )
@@ -257,7 +257,7 @@ async def album_play_end(request: Request):
                 avgRate=play_data['avgRate'] if play_data['avgRate'] > user_album['avgRate'] else user_album['avgRate'],
                 totalScore=play_data['totalScore'] if play_data['totalScore'] > user_album['totalScore'] else user_album['totalScore'],
                 progress=1,
-                updatedAt=datetime.now(timezone.utc)
+                updatedAt=datetime.utcnow()
             )
             await player_database.execute(query)
 
@@ -267,7 +267,7 @@ async def album_play_end(request: Request):
                 query = userProfiles.update().where(userProfiles.c.pk == user['pk']).values(
                     thumbAquaLevel=user_aqua_level if album['finger'] == 0 else user_profile['thumbAquaLevel'],
                     multiAquaLevel=user_aqua_level if album['finger'] == 1 else user_profile['multiAquaLevel'],
-                    updatedAt=datetime.now(timezone.utc)
+                    updatedAt=datetime.utcnow()
                 )
                 await player_database.execute(query)
                 finger_query = 'THUMB' if album['finger'] == 0 else 'MULTI'
@@ -307,8 +307,8 @@ async def album_play_end(request: Request):
         season = ALBUM_SEASON,
         avgRate = play_data['avgRate'],
         totalScore = play_data['totalScore'],
-        updatedAt = datetime.now(timezone.utc),
-        createdAt = datetime.now(timezone.utc),
+        updatedAt = datetime.utcnow(),
+        createdAt = datetime.utcnow(),
         AlbumPk = album_pk,
         UserPk = user['pk']
     )
@@ -329,8 +329,8 @@ async def album_play_end(request: Request):
                 season = ALBUM_SEASON,
                 avgRate = play_data['avgRate'],
                 totalScore = play_data['totalScore'],
-                updatedAt = datetime.now(timezone.utc),
-                createdAt = datetime.now(timezone.utc),
+                updatedAt = datetime.utcnow(),
+                createdAt = datetime.utcnow(),
                 AlbumPk = album_pk,
                 UserPk = user['pk'],
                 UserAlbumRecordPk = record_pk
@@ -343,7 +343,7 @@ async def album_play_end(request: Request):
                 state = ALBUM_SEASON,
                 avgRate = play_data['avgRate'],
                 totalScore = play_data['totalScore'],
-                updatedAt = datetime.now(timezone.utc),
+                updatedAt = datetime.utcnow(),
                 UserAlbumRecordPk = record_pk
             )
             await player_database.execute(query)

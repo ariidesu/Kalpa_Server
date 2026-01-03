@@ -1,7 +1,7 @@
 from starlette.responses import JSONResponse
 from starlette.requests import Request
 from starlette.routing import Route
-from datetime import datetime, timezone
+from datetime import datetime
 
 from api.database import player_database, manifest_database, labMissions, labProducts, userLabMissions, userLabProducts, userProfiles, userConstellCharacters, get_user_and_validate_session, get_user_lab_missions, check_item_entitlement, combine_queues
 from api.misc import get_standard_response, convert_datetime, get_character_skill
@@ -18,8 +18,8 @@ async def grant_lab_reward(user_pk, product_pk, item_list, is_aste_help=0):
         UserPk = user_pk,
         LabProductPk = product_pk,
         isAsteHelp = is_aste_help,
-        startDate = datetime.now(timezone.utc),
-        endDate = datetime.now(timezone.utc)
+        startDate = datetime.utcnow(),
+        endDate = datetime.utcnow()
     )
     await player_database.execute(update_query)
     user_lab_product_query = userLabProducts.select().where((userLabProducts.c.UserPk == user_pk) & (userLabProducts.c.LabProductPk == product_pk))
@@ -95,7 +95,7 @@ async def lab_product_begin_research(request: Request):
                         LabMissionPk = mission['pk'],
                         current0 = 0,
                         current1 = 0,
-                        startDate = datetime.now(timezone.utc),
+                        startDate = datetime.utcnow(),
                         endDate = None,
                         state = 0
                     )
@@ -104,7 +104,7 @@ async def lab_product_begin_research(request: Request):
                 update_query = userProfiles.update().where(userProfiles.c.UserPk == user['pk']).values(
                     onResearchLabProductPkOrZero = lab_product_pk,
                     onResearchLabMissionPkOrZero = first_mission_pk,
-                    researchStartDate = datetime.now(timezone.utc)
+                    researchStartDate = datetime.utcnow()
                 )
                 await player_database.execute(update_query)
 
@@ -278,7 +278,7 @@ async def lab_mission_research(request: Request):
                 if user_lab_mission['current0'] >= lab_mission['goal0'] and user_lab_mission['current1'] >= lab_mission['goal1']:
                     update_query = userLabMissions.update().where((userLabMissions.c.UserPk == user['pk']) & (userLabMissions.c.LabMissionPk == lab_mission_pk)).values(
                         state = 2,
-                        endDate = datetime.now(timezone.utc)
+                        endDate = datetime.utcnow()
                     )
                     await player_database.execute(update_query)
                     user_lab_mission = dict(await player_database.fetch_one(user_lab_mission_query))
@@ -295,7 +295,7 @@ async def lab_mission_research(request: Request):
 
                         update_query = userProfiles.update().where(userProfiles.c.UserPk == user['pk']).values(
                             onResearchLabMissionPkOrZero = next_mission_pk,
-                            researchStartDate = datetime.now(timezone.utc)
+                            researchStartDate = datetime.utcnow()
                         )
                         await player_database.execute(update_query)
 
